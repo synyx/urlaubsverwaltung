@@ -437,9 +437,10 @@ class OvertimeFormValidatorTest {
         when(overtimeService.getLeftOvertimeForPerson(any(Person.class))).thenReturn(Duration.ZERO);
 
         final OvertimeForm overtimeForm = new OvertimeForm(createOvertimeRecord());
-        overtimeForm.setComment(
-            "Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore "
-                + "et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores");
+        overtimeForm.setComment("""
+                Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore
+                et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores
+                """);
 
         sut.validate(overtimeForm, errors);
 
@@ -477,9 +478,10 @@ class OvertimeFormValidatorTest {
         when(overtimeService.getLeftOvertimeForPerson(any(Person.class))).thenReturn(Duration.ZERO);
 
         final OvertimeForm overtimeForm = new OvertimeForm(createOvertimeRecord());
-        overtimeForm.setComment(
-            "Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore "
-                + "et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores e");
+        overtimeForm.setComment("""
+                Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore
+                et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores e
+                """);
 
         sut.validate(overtimeForm, errors);
 
