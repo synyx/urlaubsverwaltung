@@ -83,7 +83,6 @@ class ApplicationForLeaveCreateIT extends TestContainersBase {
         assertThat(webDriver.getTitle()).isEqualTo("Login");
 
         webDriver.findElementById("username").sendKeys(person.getUsername());
-        webDriver.findElementById("password").sendKeys("secret");
         webDriver.findElementByXPath("//button[@type='submit']").click();
 
         new WebDriverWait(webDriver, 20).until(visibilityOfElementLocated(By.id("application-new-link")));
@@ -102,7 +101,6 @@ class ApplicationForLeaveCreateIT extends TestContainersBase {
 
     private Person createPerson() {
         final Person person = new Person("dBradley", "Bradley", "Donald", "Donald.Bradley@example.org");
-        person.setPassword("2f09520efd37e0add52eb78b19195ff9a07c07acbcfc9b61349be76da7a1bccfc60c9b80218d31ec");
         person.setPermissions(List.of(USER));
         final Person savedPerson = personService.save(person);
 
@@ -115,7 +113,6 @@ class ApplicationForLeaveCreateIT extends TestContainersBase {
         final LocalDate lastDayOfYear = LocalDate.of(currentYear, DECEMBER, 31);
         accountInteractionService.updateOrCreateHolidaysAccount(savedPerson, firstDayOfYear, lastDayOfYear, TEN, TEN, TEN, ZERO, null);
         accountInteractionService.updateOrCreateHolidaysAccount(savedPerson, firstDayOfYear.plusYears(1), lastDayOfYear.plusYears(1), TEN, TEN, TEN, ZERO, null);
-
 
         return savedPerson;
     }
