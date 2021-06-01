@@ -4,8 +4,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.MessageSource;
 import org.springframework.stereotype.Service;
-import org.synyx.urlaubsverwaltung.person.Person;
-import org.synyx.urlaubsverwaltung.person.PersonService;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,22 +23,19 @@ class MailServiceImpl implements MailService {
     private final MailContentBuilder mailContentBuilder;
     private final MailSenderService mailSenderService;
     private final MailProperties mailProperties;
-    private final PersonService personService;
 
     @Autowired
     MailServiceImpl(MessageSource messageSource, MailContentBuilder mailContentBuilder, MailSenderService mailSenderService,
-                    MailProperties mailProperties, PersonService personService) {
+                    MailProperties mailProperties) {
 
         this.messageSource = messageSource;
         this.mailContentBuilder = mailContentBuilder;
         this.mailProperties = mailProperties;
         this.mailSenderService = mailSenderService;
-        this.personService = personService;
     }
 
     @Override
     public void send(Mail mail) {
-
         final Map<String, Object> model = mail.getTemplateModel();
         model.put("baseLinkURL", getApplicationUrl());
 
@@ -58,14 +53,13 @@ class MailServiceImpl implements MailService {
         });
     }
 
-    private List<Person> getRecipients(Mail mail) {
+    private List<Recipient> getRecipients(Mail mail) {
 
-        final List<Person> recipients = new ArrayList<>();
-        mail.getMailNotificationRecipients().ifPresent(mailNotification -> recipients.addAll(personService.getPersonsWithNotificationType(mailNotification)));
-        mail.getMailAddressRecipients().ifPresent(recipients::addAll);
+        final List<Recipient> recipients = new ArrayList<>();
+        mail.getRecipients().ifPresent(recipients::addAll);
 
         if (mail.isSendToTechnicalMail()) {
-            recipients.add(new Person(null, null, "Administrator", mailProperties.getAdministrator()));
+            recipients.add(new Recipient(mailProperties.getAdministrator(), "Administrator"));
         }
 
         return recipients;

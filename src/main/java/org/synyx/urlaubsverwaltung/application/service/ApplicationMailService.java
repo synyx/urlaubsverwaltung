@@ -15,7 +15,9 @@ import org.synyx.urlaubsverwaltung.calendar.ICalType;
 import org.synyx.urlaubsverwaltung.department.DepartmentService;
 import org.synyx.urlaubsverwaltung.mail.Mail;
 import org.synyx.urlaubsverwaltung.mail.MailService;
+import org.synyx.urlaubsverwaltung.mail.Recipient;
 import org.synyx.urlaubsverwaltung.person.Person;
+import org.synyx.urlaubsverwaltung.person.PersonService;
 import org.synyx.urlaubsverwaltung.settings.SettingsService;
 
 import java.io.File;
@@ -51,17 +53,19 @@ class ApplicationMailService {
     private final ICalService iCalService;
     private final MessageSource messageSource;
     private final SettingsService settingsService;
+    private final PersonService personService;
 
     @Autowired
     ApplicationMailService(MailService mailService, DepartmentService departmentService,
                            ApplicationRecipientService applicationRecipientService, ICalService iCalService,
-                           MessageSource messageSource, SettingsService settingsService) {
+                           MessageSource messageSource, SettingsService settingsService, PersonService personService) {
         this.mailService = mailService;
         this.departmentService = departmentService;
         this.applicationRecipientService = applicationRecipientService;
         this.iCalService = iCalService;
         this.messageSource = messageSource;
         this.settingsService = settingsService;
+        this.personService = personService;
     }
 
     void sendAllowedNotification(Application application, ApplicationComment applicationComment) {
@@ -76,7 +80,7 @@ class ApplicationMailService {
 
         // Inform user that the application for leave has been allowed
         final Mail mailToApplicant = Mail.builder()
-            .withRecipient(application.getPerson())
+            .withRecipient(extractRecipient(application))
             .withSubject("subject.application.allowed.user")
             .withTemplate("allowed_user", model)
             .withAttachment(CALENDAR_ICS, calendarFile)
@@ -85,7 +89,7 @@ class ApplicationMailService {
 
         // Inform office that there is a new allowed application for leave
         final Mail mailToOffice = Mail.builder()
-            .withRecipient(NOTIFICATION_OFFICE)
+            .withRecipient(personService.findRecipients(NOTIFICATION_OFFICE))
             .withSubject("subject.application.allowed.office")
             .withTemplate("allowed_office", model)
             .build();
@@ -108,7 +112,7 @@ class ApplicationMailService {
 
         // send reject information to the applicant
         final Mail mailToApplicant = Mail.builder()
-            .withRecipient(application.getPerson())
+            .withRecipient(extractRecipient(application))
             .withSubject("subject.application.rejected")
             .withTemplate("rejected", model)
             .build();
@@ -118,7 +122,7 @@ class ApplicationMailService {
         // send reject information to all other relevant
         final List<Person> relevantRecipientsToInform = applicationRecipientService.getRecipientsOfInterest(application);
         final Mail mailToRelevantRecipients = Mail.builder()
-            .withRecipient(relevantRecipientsToInform)
+            .withRecipient(mapToMailRecipients(relevantRecipientsToInform))
             .withSubject("subject.application.rejected_information")
             .withTemplate("rejected_information", model)
             .build();
@@ -142,7 +146,7 @@ class ApplicationMailService {
         model.put("sender", sender);
 
         final Mail mailToApplicant = Mail.builder()
-            .withRecipient(recipient)
+            .withRecipient(new Recipient(recipient.getEmail(), recipient.getNiceName()))
             .withSubject("subject.application.refer")
             .withTemplate("refer", model)
             .build();
@@ -164,7 +168,7 @@ class ApplicationMailService {
         model.put(RECIPIENT, recipient);
 
         final Mail mailToApplicant = Mail.builder()
-            .withRecipient(recipient)
+            .withRecipient(new Recipient(recipient.getEmail(), recipient.getNiceName()))
             .withSubject("subject.application.edited", application.getPerson().getNiceName())
             .withTemplate("edited", model)
             .build();
@@ -185,7 +189,7 @@ class ApplicationMailService {
 
         // send mail to applicant
         final Mail mailToApplicant = Mail.builder()
-            .withRecipient(application.getPerson())
+            .withRecipient(extractRecipient(application))
             .withSubject("subject.application.cancellationRequest.declined.applicant", application.getPerson().getNiceName())
             .withTemplate("application_cancellation_request_declined_applicant", model)
             .build();
@@ -195,7 +199,7 @@ class ApplicationMailService {
         final List<Person> relevantRecipientsToInform = applicationRecipientService.getRecipientsOfInterest(application);
         relevantRecipientsToInform.addAll(applicationRecipientService.getRecipientsWithOfficeNotifications());
         final Mail mailToOffice = Mail.builder()
-            .withRecipient(relevantRecipientsToInform)
+            .withRecipient(mapToMailRecipients(relevantRecipientsToInform))
             .withSubject("subject.application.cancellationRequest.declined.management")
             .withTemplate("application_cancellation_request_declined_management", model)
             .build();
@@ -217,7 +221,7 @@ class ApplicationMailService {
 
         // send mail to applicant
         final Mail mailToApplicant = Mail.builder()
-            .withRecipient(application.getPerson())
+            .withRecipient(extractRecipient(application))
             .withSubject("subject.application.cancellationRequest.applicant")
             .withTemplate("application_cancellation_request_applicant", model)
             .build();
@@ -226,7 +230,7 @@ class ApplicationMailService {
         // send reject information to the office
         final List<Person> relevantRecipientsToInform = applicationRecipientService.getRecipientsWithOfficeNotifications();
         final Mail mailToOffice = Mail.builder()
-            .withRecipient(relevantRecipientsToInform)
+            .withRecipient(mapToMailRecipients(relevantRecipientsToInform))
             .withSubject("subject.application.cancellationRequest")
             .withTemplate("application_cancellation_request", model)
             .build();
@@ -244,7 +248,7 @@ class ApplicationMailService {
         model.put(APPLICATION, application);
 
         final Mail mailToApplicant = Mail.builder()
-            .withRecipient(application.getPerson())
+            .withRecipient(extractRecipient(application))
             .withSubject("subject.sicknote.converted")
             .withTemplate("sicknote_converted", model)
             .build();
@@ -268,7 +272,7 @@ class ApplicationMailService {
         model.put(DAY_LENGTH, getTranslation(application.getDayLength().name()));
 
         final Mail mailToReplacement = Mail.builder()
-            .withRecipient(holidayReplacement.getPerson())
+            .withRecipient(extractRecipient(holidayReplacement))
             .withSubject("subject.application.holidayReplacement.apply", application.getPerson().getNiceName())
             .withTemplate("notify_holiday_replacement_apply", model)
             .build();
@@ -295,7 +299,7 @@ class ApplicationMailService {
         model.put(DAY_LENGTH, getTranslation(application.getDayLength().name()));
 
         final Mail mailToReplacement = Mail.builder()
-            .withRecipient(holidayReplacement.getPerson())
+            .withRecipient(extractRecipient(holidayReplacement))
             .withSubject("subject.application.holidayReplacement.allow", application.getPerson().getNiceName())
             .withTemplate("notify_holiday_replacement_allow", model)
             .withAttachment(CALENDAR_ICS, calendarFile)
@@ -321,7 +325,7 @@ class ApplicationMailService {
         model.put(DAY_LENGTH, getTranslation(application.getDayLength().name()));
 
         final Mail mailToReplacement = Mail.builder()
-            .withRecipient(holidayReplacement.getPerson())
+            .withRecipient(extractRecipient(holidayReplacement))
             .withSubject("subject.application.holidayReplacement.cancellation", application.getPerson().getNiceName())
             .withTemplate("notify_holiday_replacement_cancellation", model)
             .withAttachment(CALENDAR_ICS, calendarFile)
@@ -346,7 +350,7 @@ class ApplicationMailService {
         model.put(DAY_LENGTH, getTranslation(application.getDayLength().name()));
 
         final Mail mailToReplacement = Mail.builder()
-            .withRecipient(holidayReplacement.getPerson())
+            .withRecipient(extractRecipient(holidayReplacement))
             .withSubject("subject.application.holidayReplacement.edit", application.getPerson().getNiceName())
             .withTemplate("notify_holiday_replacement_edit", model)
             .build();
@@ -370,7 +374,7 @@ class ApplicationMailService {
         model.put(COMMENT, comment);
 
         final Mail mailToApplicant = Mail.builder()
-            .withRecipient(application.getPerson())
+            .withRecipient(extractRecipient(application))
             .withSubject("subject.application.applied.user")
             .withTemplate("confirm", model)
             .build();
@@ -394,7 +398,7 @@ class ApplicationMailService {
         model.put(COMMENT, comment);
 
         final Mail mailToApplicant = Mail.builder()
-            .withRecipient(application.getPerson())
+            .withRecipient(extractRecipient(application))
             .withSubject("subject.application.appliedByOffice")
             .withTemplate("new_application_by_office", model)
             .build();
@@ -417,7 +421,7 @@ class ApplicationMailService {
         if (application.getPerson().equals(application.getCanceller())) {
 
             final Mail mailToApplicant = Mail.builder()
-                .withRecipient(application.getPerson())
+                .withRecipient(extractRecipient(application))
                 .withSubject("subject.application.revoked.applicant")
                 .withTemplate("revoked_applicant", model)
                 .build();
@@ -426,7 +430,7 @@ class ApplicationMailService {
         } else {
 
             final Mail mailToNotApplicant = Mail.builder()
-                .withRecipient(application.getPerson())
+                .withRecipient(extractRecipient(application))
                 .withSubject("subject.application.revoked.notApplicant")
                 .withTemplate("revoked_not_applicant", model)
                 .build();
@@ -437,7 +441,7 @@ class ApplicationMailService {
         // send reject information to all other relevant persons
         final List<Person> relevantRecipientsToInform = applicationRecipientService.getRecipientsOfInterest(application);
         final Mail mailToRelevantPersons = Mail.builder()
-            .withRecipient(relevantRecipientsToInform)
+            .withRecipient(mapToMailRecipients(relevantRecipientsToInform))
             .withSubject("subject.application.revoked.management")
             .withTemplate("revoked_management", model)
             .build();
@@ -461,7 +465,7 @@ class ApplicationMailService {
 
         // send cancelled by office information to the applicant
         final Mail mailToApplicant = Mail.builder()
-            .withRecipient(application.getPerson())
+            .withRecipient(extractRecipient(application))
             .withSubject("subject.application.cancelled.user")
             .withTemplate("cancelled_by_office", model)
             .withAttachment(CALENDAR_ICS, calendarFile)
@@ -473,7 +477,7 @@ class ApplicationMailService {
         final List<Person> relevantRecipientsToInform = applicationRecipientService.getRecipientsOfInterest(application);
         relevantRecipientsToInform.addAll(applicationRecipientService.getRecipientsWithOfficeNotifications());
         final Mail mailToRelevantPersons = Mail.builder()
-            .withRecipient(relevantRecipientsToInform)
+            .withRecipient(mapToMailRecipients(relevantRecipientsToInform))
             .withSubject("subject.application.cancelled.management")
             .withTemplate("cancelled_by_office_management", model)
             .withAttachment(CALENDAR_ICS, calendarFile)
@@ -505,14 +509,13 @@ class ApplicationMailService {
 
         final List<Person> recipients = applicationRecipientService.getRecipientsOfInterest(application);
         final Mail mailToAllowAndRemind = Mail.builder()
-            .withRecipient(recipients)
+            .withRecipient(mapToMailRecipients(recipients))
             .withSubject("subject.application.applied.boss", application.getPerson().getNiceName())
             .withTemplate("new_applications", model)
             .build();
 
         mailService.send(mailToAllowAndRemind);
     }
-
 
     /**
      * Sends an email to the applicant and to the second stage authorities that the application for leave has been
@@ -530,7 +533,7 @@ class ApplicationMailService {
         model.put(COMMENT, comment);
 
         final Mail mailToApplicant = Mail.builder()
-            .withRecipient(application.getPerson())
+            .withRecipient(extractRecipient(application))
             .withSubject("subject.application.temporaryAllowed.user")
             .withTemplate("temporary_allowed_user", model)
             .build();
@@ -549,7 +552,7 @@ class ApplicationMailService {
 
         final List<Person> recipients = applicationRecipientService.getRecipientsForTemporaryAllow(application);
         final Mail mailToTemporaryAllow = Mail.builder()
-            .withRecipient(recipients)
+            .withRecipient(mapToMailRecipients(recipients))
             .withSubject("subject.application.temporaryAllowed.secondStage")
             .withTemplate("temporary_allowed_second_stage_authority", modelSecondStage)
             .build();
@@ -569,7 +572,7 @@ class ApplicationMailService {
 
         final List<Person> recipients = applicationRecipientService.getRecipientsOfInterest(application);
         final Mail mailToAllowAndRemind = Mail.builder()
-            .withRecipient(recipients)
+            .withRecipient(mapToMailRecipients(recipients))
             .withSubject("subject.application.remind")
             .withTemplate("remind", model)
             .build();
@@ -583,7 +586,7 @@ class ApplicationMailService {
             model.put("daysBeforeUpcomingApplication", daysBeforeUpcomingApplication);
 
             final Mail mailToUpcomingApplicationsPersons = Mail.builder()
-                .withRecipient(application.getPerson())
+                .withRecipient(extractRecipient(application))
                 .withSubject("subject.application.remind.upcoming")
                 .withTemplate("remind_application_upcoming", model)
                 .build();
@@ -622,7 +625,7 @@ class ApplicationMailService {
             model.put(RECIPIENT, recipient);
 
             final Mail mailToRemindForWaiting = Mail.builder()
-                .withRecipient(recipient)
+                .withRecipient(new Recipient(recipient.getEmail(), recipient.getNiceName()))
                 .withSubject("subject.application.cronRemind")
                 .withTemplate("cron_remind", model)
                 .build();
@@ -646,5 +649,17 @@ class ApplicationMailService {
     private AbsenceTimeConfiguration getAbsenceTimeConfiguration() {
         final TimeSettings timeSettings = settingsService.getSettings().getTimeSettings();
         return new AbsenceTimeConfiguration(timeSettings);
+    }
+
+    private Recipient extractRecipient(Application application) {
+        return new Recipient(application.getPerson().getEmail(), application.getPerson().getNiceName());
+    }
+
+    private Recipient extractRecipient(HolidayReplacementEntity holidayReplacement) {
+        return new Recipient(holidayReplacement.getPerson().getEmail(), holidayReplacement.getPerson().getNiceName());
+    }
+
+    private List<Recipient> mapToMailRecipients(List<Person> recipients) {
+        return recipients.stream().map(recipient -> new Recipient(recipient.getEmail(), recipient.getNiceName())).collect(toList());
     }
 }

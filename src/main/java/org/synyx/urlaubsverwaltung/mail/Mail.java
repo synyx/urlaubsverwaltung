@@ -1,8 +1,5 @@
 package org.synyx.urlaubsverwaltung.mail;
 
-import org.synyx.urlaubsverwaltung.person.MailNotification;
-import org.synyx.urlaubsverwaltung.person.Person;
-
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -12,8 +9,7 @@ import java.util.Optional;
 
 public class Mail {
 
-    private final List<Person> mailAddressRecipients;
-    private final MailNotification mailNotificationRecipients;
+    private final List<Recipient> recipients;
     private final boolean sendToTechnicalMail;
 
     private final String templateName;
@@ -24,11 +20,10 @@ public class Mail {
 
     private final List<MailAttachment> mailAttachments;
 
-    Mail(List<Person> mailAddressRecipients, MailNotification mailNotificationRecipients, boolean sendToTechnicalMail,
+    Mail(List<Recipient> recipients, boolean sendToTechnicalMail,
          String templateName, Map<String, Object> templateModel, String subjectMessageKey,
          Object[] subjectMessageArguments, List<MailAttachment> mailAttachments) {
-        this.mailAddressRecipients = mailAddressRecipients;
-        this.mailNotificationRecipients = mailNotificationRecipients;
+        this.recipients = recipients;
         this.sendToTechnicalMail = sendToTechnicalMail;
         this.templateName = templateName;
         this.templateModel = templateModel;
@@ -37,12 +32,8 @@ public class Mail {
         this.mailAttachments = mailAttachments;
     }
 
-    public Optional<List<Person>> getMailAddressRecipients() {
-        return Optional.ofNullable(mailAddressRecipients);
-    }
-
-    public Optional<MailNotification> getMailNotificationRecipients() {
-        return Optional.ofNullable(mailNotificationRecipients);
+    public Optional<List<Recipient>> getRecipients() {
+        return Optional.ofNullable(recipients);
     }
 
     public boolean isSendToTechnicalMail() {
@@ -78,8 +69,7 @@ public class Mail {
      */
     public static class Builder {
 
-        private List<Person> mailAddressRecipients = new ArrayList<>();
-        private MailNotification mailNotificationRecipients;
+        private List<Recipient> recipients = new ArrayList<>();
         private boolean sendToTechnicalMail;
 
         private String templateName;
@@ -95,22 +85,17 @@ public class Mail {
             return this;
         }
 
-        public Mail.Builder withRecipient(MailNotification mailNotification) {
-            this.mailNotificationRecipients = mailNotification;
-            return this;
-        }
-
-        public Mail.Builder withRecipient(Person recipient) {
+        public Mail.Builder withRecipient(Recipient recipient) {
             withRecipient(List.of(recipient));
             return this;
         }
 
-        public Mail.Builder withRecipient(List<Person> recipients) {
-            if (mailAddressRecipients == null) {
-                mailAddressRecipients = new ArrayList<>();
+        public Mail.Builder withRecipient(List<Recipient> recipients) {
+            if (this.recipients == null) {
+                this.recipients = new ArrayList<>();
             }
 
-            this.mailAddressRecipients.addAll(recipients);
+            this.recipients.addAll(recipients);
             return this;
         }
 
@@ -136,7 +121,7 @@ public class Mail {
         }
 
         public Mail build() {
-            return new Mail(mailAddressRecipients, mailNotificationRecipients, sendToTechnicalMail,
+            return new Mail(recipients, sendToTechnicalMail,
                 templateName, templateModel, subjectMessageKey, subjectMessageArguments,
                 mailAttachments);
         }

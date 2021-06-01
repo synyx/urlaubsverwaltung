@@ -96,7 +96,7 @@ public class TurnOfTheYearAccountUpdaterService {
 
         // send email to office for printing statistic
         final Mail mailToOffice = Mail.builder()
-            .withRecipient(NOTIFICATION_OFFICE)
+            .withRecipient(personService.findRecipients(NOTIFICATION_OFFICE))
             .withSubject(subjectMessageKey)
             .withTemplate(templateName, model)
             .build();
