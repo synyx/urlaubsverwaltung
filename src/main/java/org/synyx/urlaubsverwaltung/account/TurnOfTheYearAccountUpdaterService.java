@@ -11,11 +11,7 @@ import org.synyx.urlaubsverwaltung.person.PersonService;
 import java.time.Clock;
 import java.time.LocalDate;
 import java.time.Year;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 import static java.lang.invoke.MethodHandles.lookup;
 import static org.slf4j.LoggerFactory.getLogger;
