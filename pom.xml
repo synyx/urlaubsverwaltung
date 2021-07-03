@@ -28,6 +28,10 @@
     <selenium.version>3.141.59</selenium.version>
     <!-- Downgrade because of removed code in jasper in 9.0.47 - delete if tomcat fixed this -->
     <tomcat.version>9.0.46</tomcat.version>
+
+    <docker-publish-registry>registry.example.com</docker-publish-registry>
+    <docker-publish-registry-username>username</docker-publish-registry-username>
+    <docker-publish-registry-password>password</docker-publish-registry-password>
   </properties>
 
   <scm>
@@ -371,6 +375,18 @@
       <plugin>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-maven-plugin</artifactId>
+        <configuration>
+          <image>
+            <name>synyx/${project.artifactId}:${project.version}</name>
+          </image>
+          <docker>
+            <publishRegistry>
+              <username>${docker-publish-registry-username}</username>
+              <password>${docker-publish-registry-password}</password>
+              <url>${docker-publish-registry}</url>
+            </publishRegistry>
+          </docker>
+        </configuration>
       </plugin>
 
       <!-- Frontend assets -->
