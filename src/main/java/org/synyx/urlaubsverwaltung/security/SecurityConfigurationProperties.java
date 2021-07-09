@@ -15,7 +15,7 @@ public class SecurityConfigurationProperties {
         ACTIVEDIRECTORY
     }
 
-    private AuthenticationProvider auth = AuthenticationProvider.DEFAULT;
+    private AuthenticationProvider auth = AuthenticationProvider.OIDC;
 
     public AuthenticationProvider getAuth() {
         return auth;
