@@ -59,7 +59,7 @@
             </c:set>
 
             <c:set var="workingTimeError">
-                <form:errors path="workingTimeSettings.*"/>
+                <form:errors path="workingTimeSettingsEmbeddable.*"/>
             </c:set>
             <c:set var="timeError">
                 <form:errors path="timeSettings.*"/>
@@ -123,6 +123,142 @@
             <div class="tab-content tw-mb-16">
 
                 <div class="tab-pane active" id="absence">
+
+                    <div class="form-section tw-mb-8">
+                        <uv:section-heading>
+                            <h2>
+                                // TODO header section title
+                            </h2>
+                        </uv:section-heading>
+                        <div class="row">
+                            <div class="col-md-4 col-md-push-8">
+                                <span class="help-block tw-text-sm">
+                                    <icon:information-circle className="tw-w-4 tw-h-4" solid="true" />
+                                    TODO help information
+                                </span>
+                            </div>
+                            <div class="col-md-8 col-md-pull-4">
+                                <div class="form-group">
+                                    <label class="control-label col-md-3">
+                                        TODO label text
+                                    </label>
+                                    <div class="col-md-9">
+                                        <div class="tw-flex">
+                                            <uv:select
+                                                id="special-leave-select"
+                                                name="specialLeaveToAdd"
+                                                cssClass="tw-rounded-l tw-rounded-r-none"
+                                            >
+                                                <option value=""></option>
+                                                <c:forEach items="${specialLeaves.allSpecialLeaves}" var="specialLeave">
+                                                    <option value="${specialLeave.id}">
+                                                        <c:out value="${specialLeave.specialLeave.messageKey}"/>
+                                                    </option>
+                                                </c:forEach>
+                                            </uv:select>
+                                            <button
+                                                type="submit"
+                                                class="btn btn-default tw-border-l-0 tw-rounded-r tw-m-0 tw-px-4 tw-font-medium"
+                                                name="add-holiday-replacement"
+                                                formmethod="post"
+                                                formaction="${ADD_REPLACEMENT_ACTION}"
+                                            >
+                                                <spring:message code="application.data.holidayReplacement.add-button.text" />
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-section tw-mb-8">
+                        <uv:section-heading>
+                            <h2>
+                                <spring:message code="settings.vacation.title"/>
+                            </h2>
+                        </uv:section-heading>
+                        <div class="row">
+                            <div class="col-md-4 col-md-push-8">
+                                <span class="help-block tw-text-sm">
+                                    <icon:information-circle className="tw-w-4 tw-h-4" solid="true" />
+                                    <spring:message code="settings.vacation.description"/>
+                                </span>
+                            </div>
+                            <div class="col-md-8 col-md-pull-4">
+                                <c:if test="${defaultVacationDaysFromSettings}">
+                                <div class="form-group is-required">
+                                    <label class="control-label col-md-4"
+                                           for="accountSettings.defaultVacationDays">
+                                        <spring:message code='settings.vacation.defaultVacationDays'/>:
+                                    </label>
+                                    <div class="col-md-8">
+                                        <form:input id="accountSettings.defaultVacationDays"
+                                                    path="accountSettings.defaultVacationDays"
+                                                    class="form-control" cssErrorClass="form-control error"
+                                                    type="number" step="1"/>
+                                        <uv:error-text>
+                                            <form:errors path="accountSettings.defaultVacationDays" />
+                                        </uv:error-text>
+                                    </div>
+                                </div>
+                                </c:if>
+                                <div class="form-group is-required">
+                                    <label class="control-label col-md-4"
+                                           for="accountSettings.maximumAnnualVacationDays">
+                                        <spring:message code='settings.vacation.maximumAnnualVacationDays'/>:
+                                    </label>
+                                    <div class="col-md-8">
+                                        <form:input id="accountSettings.maximumAnnualVacationDays"
+                                                    path="accountSettings.maximumAnnualVacationDays"
+                                                    class="form-control" cssErrorClass="form-control error"
+                                                    type="number" step="1"/>
+                                        <uv:error-text>
+                                            <form:errors path="accountSettings.maximumAnnualVacationDays" />
+                                        </uv:error-text>
+                                    </div>
+                                </div>
+                                <div class="form-group is-required">
+                                    <label class="control-label col-md-4"
+                                           for="applicationSettings.maximumMonthsToApplyForLeaveInAdvance">
+                                        <spring:message code='settings.vacation.maximumMonthsToApplyForLeaveInAdvance'/>:
+                                    </label>
+                                    <div class="col-md-8">
+                                        <form:input id="applicationSettings.maximumMonthsToApplyForLeaveInAdvance"
+                                                    path="applicationSettings.maximumMonthsToApplyForLeaveInAdvance"
+                                                    class="form-control" cssErrorClass="form-control error"
+                                                    type="number" step="1"/>
+                                        <uv:error-text>
+                                            <form:errors path="applicationSettings.maximumMonthsToApplyForLeaveInAdvance" />
+                                        </uv:error-text>
+                                    </div>
+                                </div>
+
+                                <div class="form-group is-required">
+                                    <label class="control-label col-md-4"
+                                           for="applicationSettings.allowHalfDays.true">
+                                        <spring:message code='settings.vacation.allowHalfDays'/>:
+                                    </label>
+                                    <div class="col-md-8 radio">
+                                        <label class="halves">
+                                            <form:radiobutton id="applicationSettings.allowHalfDays.true"
+                                                              path="applicationSettings.allowHalfDays"
+                                                              value="true"/>
+                                            <spring:message code="settings.vacation.allowHalfDays.true"/>
+                                        </label>
+                                        <label class="halves">
+                                            <form:radiobutton id="applicationSettings.allowHalfDays.false"
+                                                              path="applicationSettings.allowHalfDays"
+                                                              value="false"/>
+                                            <spring:message
+                                                code="settings.vacation.allowHalfDays.false"/>
+                                        </label>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
                     <div class="form-section tw-mb-8">
                         <uv:section-heading>
                             <h2>
@@ -401,63 +537,63 @@
                                                 <c:set var="labelMonday"><spring:message code="MONDAY" /></c:set>
                                                 <uv:checkbox
                                                     label="${labelMonday}"
-                                                    name="workingTimeSettings.workingDays"
+                                                    name="workingTimeSettingsEmbeddable.workingDays"
                                                     value="1"
-                                                    checked="${settings.workingTimeSettings.workingDays[0] == 1}"
+                                                    checked="${settings.workingTimeSettingsEmbeddable.workingDays[0] == 1}"
                                                 />
                                             </li>
                                             <li class="tw-col-start-1 tw-row-start-2">
                                                 <c:set var="labelTuesday"><spring:message code="TUESDAY" /></c:set>
                                                 <uv:checkbox
                                                     label="${labelTuesday}"
-                                                    name="workingTimeSettings.workingDays"
+                                                    name="workingTimeSettingsEmbeddable.workingDays"
                                                     value="2"
-                                                    checked="${settings.workingTimeSettings.workingDays[1] == 2}"
+                                                    checked="${settings.workingTimeSettingsEmbeddable.workingDays[1] == 2}"
                                                 />
                                             </li>
                                             <li class="tw-col-start-1 tw-row-start-3">
                                                 <c:set var="labelWednesday"><spring:message code="WEDNESDAY" /></c:set>
                                                 <uv:checkbox
                                                     label="${labelWednesday}"
-                                                    name="workingTimeSettings.workingDays"
+                                                    name="workingTimeSettingsEmbeddable.workingDays"
                                                     value="3"
-                                                    checked="${settings.workingTimeSettings.workingDays[2] == 3}"
+                                                    checked="${settings.workingTimeSettingsEmbeddable.workingDays[2] == 3}"
                                                 />
                                             </li>
                                             <li class="tw-col-start-1 tw-row-start-4">
                                                 <c:set var="labelThursday"><spring:message code="THURSDAY" /></c:set>
                                                 <uv:checkbox
                                                     label="${labelThursday}"
-                                                    name="workingTimeSettings.workingDays"
+                                                    name="workingTimeSettingsEmbeddable.workingDays"
                                                     value="4"
-                                                    checked="${settings.workingTimeSettings.workingDays[3] == 4}"
+                                                    checked="${settings.workingTimeSettingsEmbeddable.workingDays[3] == 4}"
                                                 />
                                             </li>
                                             <li class="tw-col-start-1 tw-row-start-5">
                                                 <c:set var="labelFriday"><spring:message code="FRIDAY" /></c:set>
                                                 <uv:checkbox
                                                     label="${labelFriday}"
-                                                    name="workingTimeSettings.workingDays"
+                                                    name="workingTimeSettingsEmbeddable.workingDays"
                                                     value="5"
-                                                    checked="${settings.workingTimeSettings.workingDays[4] == 5}"
+                                                    checked="${settings.workingTimeSettingsEmbeddable.workingDays[4] == 5}"
                                                 />
                                             </li>
                                             <li class="xs:tw-col-start-2 xs:tw-row-start-1">
                                                 <c:set var="labelSaturday"><spring:message code="SATURDAY" /></c:set>
                                                 <uv:checkbox
                                                     label="${labelSaturday}"
-                                                    name="workingTimeSettings.workingDays"
+                                                    name="workingTimeSettingsEmbeddable.workingDays"
                                                     value="5"
-                                                    checked="${settings.workingTimeSettings.workingDays[5] == 6}"
+                                                    checked="${settings.workingTimeSettingsEmbeddable.workingDays[5] == 6}"
                                                 />
                                             </li>
                                             <li class="xs:tw-col-start-2 xs:tw-row-start-2">
                                                 <c:set var="labelSunday"><spring:message code="SUNDAY" /></c:set>
                                                 <uv:checkbox
                                                     label="${labelSunday}"
-                                                    name="workingTimeSettings.workingDays"
+                                                    name="workingTimeSettingsEmbeddable.workingDays"
                                                     value="5"
-                                                    checked="${settings.workingTimeSettings.workingDays[6] == 7}"
+                                                    checked="${settings.workingTimeSettingsEmbeddable.workingDays[6] == 7}"
                                                 />
                                             </li>
                                         </ul>
@@ -544,14 +680,14 @@
                             <div class="col-md-8 col-md-pull-4">
                                 <div class="form-group is-required">
                                     <label class="control-label col-md-4"
-                                           for="workingTimeSettings.workingDurationForChristmasEve">
+                                           for="workingTimeSettingsEmbeddable.workingDurationForChristmasEve">
                                         <spring:message code='settings.publicHolidays.workingDuration.christmasEve'/>:
                                     </label>
 
                                     <div class="col-md-8">
-                                        <uv:select id="dayLengthTypesChristmasEve" name="workingTimeSettings.workingDurationForChristmasEve">
+                                        <uv:select id="dayLengthTypesChristmasEve" name="workingTimeSettingsEmbeddable.workingDurationForChristmasEve">
                                             <c:forEach items="${dayLengthTypes}" var="dayLengthType">
-                                                <option value="${dayLengthType}" ${settings.workingTimeSettings.workingDurationForChristmasEve == dayLengthType ? 'selected="selected"' : ''}>
+                                                <option value="${dayLengthType}" ${settings.workingTimeSettingsEmbeddable.workingDurationForChristmasEve == dayLengthType ? 'selected="selected"' : ''}>
                                                     <spring:message code="${dayLengthType}"/>
                                                 </option>
                                             </c:forEach>
@@ -560,14 +696,14 @@
                                 </div>
                                 <div class="form-group is-required">
                                     <label class="control-label col-md-4"
-                                           for="workingTimeSettings.workingDurationForNewYearsEve">
+                                           for="workingTimeSettingsEmbeddable.workingDurationForNewYearsEve">
                                         <spring:message code='settings.publicHolidays.workingDuration.newYearsEve'/>:
                                     </label>
 
                                     <div class="col-md-8">
-                                        <uv:select id="dayLengthTypesNewYearsEve" name="workingTimeSettings.workingDurationForNewYearsEve">
+                                        <uv:select id="dayLengthTypesNewYearsEve" name="workingTimeSettingsEmbeddable.workingDurationForNewYearsEve">
                                             <c:forEach items="${dayLengthTypes}" var="dayLengthType">
-                                                <option value="${dayLengthType}" ${settings.workingTimeSettings.workingDurationForNewYearsEve == dayLengthType ? 'selected="selected"' : ''}>
+                                                <option value="${dayLengthType}" ${settings.workingTimeSettingsEmbeddable.workingDurationForNewYearsEve == dayLengthType ? 'selected="selected"' : ''}>
                                                     <spring:message code="${dayLengthType}"/>
                                                 </option>
                                             </c:forEach>
@@ -580,9 +716,9 @@
                                     </label>
 
                                     <div class="col-md-8">
-                                        <uv:select id="federalStateType" name="workingTimeSettings.federalState">
+                                        <uv:select id="federalStateType" name="workingTimeSettingsEmbeddable.federalState">
                                             <c:forEach items="${federalStateTypes}" var="federalStateType">
-                                                <option value="${federalStateType}" ${settings.workingTimeSettings.federalState == federalStateType ? 'selected="selected"' : ''}>
+                                                <option value="${federalStateType}" ${settings.workingTimeSettingsEmbeddable.federalState == federalStateType ? 'selected="selected"' : ''}>
                                                     <spring:message code="federalState.${federalStateType}"/>
                                                 </option>
                                             </c:forEach>

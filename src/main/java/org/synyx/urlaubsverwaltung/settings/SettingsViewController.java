@@ -11,12 +11,14 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.synyx.urlaubsverwaltung.absence.settings.TimeSettingsService;
 import org.synyx.urlaubsverwaltung.account.AccountProperties;
 import org.synyx.urlaubsverwaltung.calendarintegration.GoogleCalendarSettings;
 import org.synyx.urlaubsverwaltung.calendarintegration.providers.CalendarProvider;
 import org.synyx.urlaubsverwaltung.period.DayLength;
 import org.synyx.urlaubsverwaltung.workingtime.FederalState;
 import org.synyx.urlaubsverwaltung.workingtime.WorkingTimeProperties;
+import org.synyx.urlaubsverwaltung.workingtime.settings.WorkingTimeSettingsService;
 
 import javax.servlet.http.HttpServletRequest;
 import java.time.Clock;
@@ -36,18 +38,41 @@ public class SettingsViewController {
     private final SettingsService settingsService;
     private final List<CalendarProvider> calendarProviders;
     private final SettingsValidator settingsValidator;
+    private final WorkingTimeSettingsService workingTimeSettingsService;
+    private final TimeSettingsService timeSettingsService;
     private final Clock clock;
 
     @Autowired
     public SettingsViewController(AccountProperties accountProperties, WorkingTimeProperties workingTimeProperties,
                                   SettingsService settingsService, List<CalendarProvider> calendarProviders,
-                                  SettingsValidator settingsValidator, Clock clock) {
+                                  SettingsValidator settingsValidator, WorkingTimeSettingsService workingTimeSettingsService, TimeSettingsService timeSettingsService, Clock clock) {
         this.accountProperties = accountProperties;
         this.workingTimeProperties = workingTimeProperties;
         this.settingsService = settingsService;
         this.calendarProviders = calendarProviders;
         this.settingsValidator = settingsValidator;
+        this.workingTimeSettingsService = workingTimeSettingsService;
+        this.timeSettingsService = timeSettingsService;
         this.clock = clock;
+    }
+
+    @GetMapping("/old")
+    @PreAuthorize(IS_OFFICE)
+    public String settingsDetailsOld(@RequestParam(value = "oautherrors", required = false) String googleOAuthError,
+                                  HttpServletRequest request, Model model) {
+
+        final String requestURL = request.getRequestURL().toString();
+        final String authorizedRedirectUrl = getAuthorizedRedirectUrl(requestURL, "/google-api-handshake");
+
+        final Settings settings = settingsService.getSettings();
+        fillModel(model, settings, authorizedRedirectUrl);
+
+        if (shouldShowOAuthError(googleOAuthError, settings)) {
+            model.addAttribute("errors", googleOAuthError);
+            model.addAttribute("oautherrors", googleOAuthError);
+        }
+
+        return "settings/settings_form";
     }
 
     @GetMapping
@@ -66,7 +91,10 @@ public class SettingsViewController {
             model.addAttribute("oautherrors", googleOAuthError);
         }
 
-        return "settings/settings_form";
+        model.addAttribute("workingtimesettings", workingTimeSettingsService.getSettingsDto());
+        model.addAttribute("timesettings", timeSettingsService.getSettingsDto());
+
+        return "settings/settings_overview";
     }
 
     @PostMapping

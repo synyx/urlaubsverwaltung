@@ -9,12 +9,14 @@ import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.validation.Errors;
 import org.synyx.urlaubsverwaltung.absence.Absence;
+import org.synyx.urlaubsverwaltung.absence.settings.TimeSettingsService;
 import org.synyx.urlaubsverwaltung.account.AccountProperties;
 import org.synyx.urlaubsverwaltung.calendarintegration.CalendarSettings;
 import org.synyx.urlaubsverwaltung.calendarintegration.providers.CalendarProvider;
 import org.synyx.urlaubsverwaltung.period.DayLength;
 import org.synyx.urlaubsverwaltung.workingtime.FederalState;
 import org.synyx.urlaubsverwaltung.workingtime.WorkingTimeProperties;
+import org.synyx.urlaubsverwaltung.workingtime.settings.WorkingTimeSettingsService;
 
 import java.time.Clock;
 import java.util.List;
@@ -58,12 +60,16 @@ class SettingsViewControllerTest {
     @Mock
     private SettingsService settingsService;
     @Mock
+    private WorkingTimeSettingsService workingTimeSettingsService;
+    @Mock
+    private TimeSettingsService timeSettingsService;
+    @Mock
     private SettingsValidator settingsValidator;
     private final Clock clock = Clock.systemUTC();
 
     @BeforeEach
     void setUp() {
-        sut = new SettingsViewController(new AccountProperties(), new WorkingTimeProperties(), settingsService, CALENDAR_PROVIDER_LIST, settingsValidator, clock);
+        sut = new SettingsViewController(new AccountProperties(), new WorkingTimeProperties(), settingsService, CALENDAR_PROVIDER_LIST, settingsValidator, workingTimeSettingsService, timeSettingsService, clock);
     }
 
     @Test
